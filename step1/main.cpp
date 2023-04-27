@@ -21,21 +21,23 @@ class MotorController{
     int hbridgeA, hbridgeB, encoderPinA, encoderPinB;
     int pwm_channel1 , pwm_channel2;
     // sensor data
-    unsigned long last_interrupt_time = 0;
     volatile unsigned long last_elapsed_time = 0;
-    volatile int movement_direction = 0;
+    volatile unsigned long last_interrupt_time = 0;
     volatile long int pos = 0;  
+    volatile int  movement_direction = 0;
 
     MotorController(int hbridgeA,int hbridgeB,int encoderPinA,int encoderPinB,long pos=0):
         hbridgeA(hbridgeA),hbridgeB(hbridgeB),encoderPinA(encoderPinA),encoderPinB(encoderPinB),
         pos(pos)
         {};
 
+    // returns the position in units of encoder counts 
     long int getPos(){
       long int pos_returned=0; noInterrupts(); pos_returned = pos; interrupts();
       return pos_returned;
     }
 
+    // returns the speed in units of encoder counts per second
     double getSpeed(){ 
       double speed; unsigned long stop_indicator;
       noInterrupts(); 
@@ -45,7 +47,7 @@ class MotorController{
       if (stop_indicator>ENC_STOP_TIME_THRESHOLD){ speed = 0; }
       return speed;
     }
-
+    // set motor direction and voltage applied to the motor
     void setMotor(int direction, int pwm_val){
       if(direction == 1){
         ledcWrite(pwm_channel1,pwm_val);
@@ -60,6 +62,8 @@ class MotorController{
         ledcWrite(pwm_channel2,LOW);
       }
     }
+    // set the pwm channels dedicated for the motor 
+    // (needed only in ESP32)
     void set_PWM_channels(int channel1,int channel2){
       pwm_channel1 = channel1; pwm_channel2 = channel2;
     }
@@ -74,7 +78,7 @@ class MotorController{
 
 // Controller Objects
 MotorController rightMotor(25,26,34,35);
-MotorController leftMotor(32,33,36,39 );
+MotorController leftMotor (32,33,36,39);
 
 PIDController rightMotorPid , leftMotorPid;
 
